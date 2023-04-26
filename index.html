@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="./js/jquery-3.6.0.min.js" ></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        /* カードのスタイルを追加 */
+        .memo {
+            width: 100%;
+            height: 100px;
+            resize: none;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        /* カードの色を追加 */
+        .memo.red {
+            background-color: #ffcccc;
+        }
+        .memo.blue {
+            background-color: #cceeff;
+        }
+        .memo.green {
+            background-color: #ccffcc;
+        }
+        /* ボタンの色変更    */
+        .color[data-color="red"] {
+        background-color: red;
+        }
+
+        .color[data-color="blue"] {
+            background-color: blue;
+        }
+
+        .color[data-color="green"] {
+            background-color: green;
+        }
+    </style>
+    <title>Document</title>
+</head>
+<body>
+    <button id="add">追加</button>
+    <button id="save">保存</button>
+    <button id="clear">削除</button>
+    <main id="main" class="continer">
+        <div>
+            1<textarea id="add_1" class="memo"></textarea>
+            <button id="delete">削除</button>
+            <!-- カードの色変更ボタンを追加 -->
+            <button class="color" data-color="red">赤</button>
+            <button class="color" data-color="blue">青</button>
+            <button class="color" data-color="green">緑</button>
+        </div>
+    </main>
+    <script>
+        //カードの枚数を保持
+        let c = 1;
+        //カード追加
+        $("#add").on("click",function(){
+            $("#main>div").removeClass("new");
+            c++;
+            const html = `
+                <div class="new">${c}<textarea id="add_${c}" class="memo"></textarea></div>
+                <button class="delete">削除</button>
+                <button class="color" data-color="red">赤</button>
+                <button class="color" data-color="blue">青</button>
+                <button class="color" data-color="green">緑</button></div>
+            `;
+            $("#main").append(html);
+        });
+        //カード保存
+        $("#save").on("click",function(){
+            const len = $(".memo").length;
+            const now = new Date();
+            const date = now.getFullYear() + '-' + (now.getMonth() + 1) + '-' + now.getDate();
+            const time = now.getHours() + ':' + now.getMinutes() + ':' + now.getSeconds();
+            const dateTime = date + ' ' + time;
+            let ary = [];
+            for(let i=0; i<len; i++){
+                ary[i] = $("#add_"+(i+1)).val();
+            }
+            localStorage.setItem("card",JSON.stringify(ary));
+            localStorage.setItem("datetime",dateTime);
+        });
+
+        // <!-- カードのドラッグ&ドロップ機能を追加 -->
+        // カードを並び替え可能にする
+        $("#main").sortable();
+
+        // カードの並び順を保存
+        $("#main").on("sortupdate", function() {
+            const cardOrder = [];
+            $(".memo").each(function(index) {
+            cardOrder.push($(this).val());
+            });
+            localStorage.setItem("cardOrder", JSON.stringify(cardOrder));
+        });
+
+        //カードの色変更
+        $(document).on("click", ".color", function(){
+            const color = $(this).data("color");
+            const memoId = $(this).siblings("textarea").attr("id"); 
+            $("#" + memoId).removeClass("red blue green");
+            $("#" + memoId).addClass(color);
+        });
+
+        // カードの削除
+        $("#main").on("click", "#delete", function() {
+            $(this).closest("div").remove();
+            // カードの枚数を再設定
+            c = $("#main>div").length;
+        });
+        //全削除
+        $("#clear").on("click",function(){
+            localStorage.clear();
+            $("#main").empty();
+            c=0;
+        });
+        //画面を読み込んだら実行！！
+        //localStorageにデータが入っていれば表示する！
+        window.onload=function(){
+            const ary = JSON.parse(localStorage.getItem("card"));
+            for(let i=0; i<ary.length; i++){
+                const html = `
+                    <div>${i+1}<textarea id="add_${i+1}" class="memo">${ary[i]}</textarea></div>
+                `;
+                $("#main").append(html);
+                c = i+1;
+            }
+            
+        }
+    </script>
+</body>
+</html>
