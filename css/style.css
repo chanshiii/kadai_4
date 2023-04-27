@@ -1,15 +1,2 @@
 @charset "utf-8";
 
-html {
-    font-size: 62.5%;
-}
-
-body {
-    background-image: url("../img/back-img.jpg");
-    background-size: 100%;
-}
-
-button {
-    width: 200px;
-    border-radius: 30%;
-}
